@@ -15,8 +15,8 @@ function init(){
   var host = "ws://chat5.turntable.fm:80/socket.io/websocket";
   try{
     socket = new WebSocket(host);
-    log('WebSocket - status '+socket.readyState);
-    socket.onopen    = function(msg){ log("Welcome - status "+this.readyState); };
+    log('Init - status '+socket.readyState);
+    socket.onopen    = function(msg){ log("Connected - status "+this.readyState); };
     socket.onmessage = function(msg){ log("Received: "+msg.data); };
     socket.onclose   = function(msg){ log("Disconnected - status "+this.readyState); };
   }
@@ -33,8 +33,9 @@ function send(){
   txt.focus();
   try{ socket.send(msg); log('Sent: '+msg); } catch(ex){ log(ex); }
 }
+
 function quit(){
-  log("Goodbye!");
+  log("Connection closed!");
   socket.close();
   socket=null;
 }
@@ -47,14 +48,30 @@ function onkey(event){ if(event.keyCode==13){ send(); } }
 
 </head>
 <body onload="init()">
- <h3>WebSocket v2.00</h3>
+ <h3>ttapi-html5 base</h3>
  <div id="log"></div>
+ <div><b>Raw request:</b></div>
  <input id="msg" type="textbox" onkeypress="onkey(event)"/>
  <button onclick="send()">Send</button>
  <button onclick="quit()">Quit</button>
- <div><b>Config:</b></div>
- AUTH: <input id="auth" type="textbox" onkeypress="onkey(event)"/><br>
+ <div><b>Config:</b> (does not save yet!)</div>
+ USERAUTH: <input id="userauth" type="textbox" onkeypress="onkey(event)"/><br>
  USERID: <input id="userid" type="textbox" onkeypress="onkey(event)"/><br>
  ROOMID: <input id="roomid" type="textbox" onkeypress="onkey(event)"/><br>
+ <div><b>Quick commands:</b></div>
+ <button onclick="send.presence.update()">presence.update (online)</button><br>
+ <button onclick="send.user.authenticate()">user.authenticate</button><br>
+ <button onclick="send.user.modify.chrome()">user.modify (chrome laptop)</button><br>
+ <input id="room.speak.msg" type="textbox" onkeypress="onkey(event)"/> <button onclick="send.room.speak()">room.speak</button><br>
+
+ <script>
+ // Quick command functions, in order
+ function send.presence.update(){
+  var msg;
+  msg = "{"api":"presence.update","status":"available","msgid":2,"userid":"'+userid+'","userauth":"'+userauth+'"};";
+  if(!msg){ alert("Something is empty"); return; }
+  try{ socket.send(msg); log('Sent: '+msg); } catch(ex){ log(ex); }
+ }
+ </script>
 </body>
 </html>
